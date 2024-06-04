@@ -1,26 +1,69 @@
 import { useState } from "react";
 import Player from "./components/Player";
 import GameBoard from "./components/GameBoard";
-import Log from "./components/Log";
+import Log from "./components/log";
+import { WINNING_COMBINATIONS } from "./winning-combinations";
+
+const initialGameBoard = [
+  [null, null, null],
+  [null, null, null],
+  [null, null, null]
+]
 
 
+
+function deriveActivePlayer(gameTurns) {
+  let currentPlayer = "X";
+  let gameBoard = initialGameBoard;
+
+  for (const turn of gameTurns) {
+    const{ square, player } = turn;
+    const{ row, col } = square;
+
+    gameBoard [row][col] = player;
+  }
+
+  let winner;
+
+  for(const combination of WINNING_COMBINATIONS) {
+    const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
+    const secondSquareSymbol = gameBoard[combination[1].row][combination[1].column];
+    const thirdSquareSymbol = gameBoard[combination[2].row][combination[2].column];
+
+    if (firstSquareSymbol && 
+    firstSquareSymbol === secondSquareSymbol &&
+    firstSquareSymbol === thirdSquareSymbol) {
+      winner = firstSquareSymbol;
+    } 
+  }
+
+
+  if (gameTurns.length > 0 && gameTurns[0].player === "X") {
+    currentPlayer = "O";  
+  }
+
+  return currentPlayer;
+}
 
 function App() {
   const [gameTurns, setGameTurns] = useState([]);
-  const [activePlayer, setActivePlayer] = useState("X");
+  const [hasWinner, setHasWinner] = useState(false);
+  //const [activePlayer, setActivePlayer] = useState("X");
+
+  const activePlayer = deriveActivePlayer(gameTurns);
+
 
   function handlePlayerClick(rowIndex, colIndex) {
-    setActivePlayer((curActivePlayer) => curActivePlayer === "X" ? "O" : "X");
-    setGameTurns(prevTurns => {
-      let currentPlayer = "X";
+    //setActivePlayer((curActivePlayer) => curActivePlayer === "X" ? "O" : "X");
+    setGameTurns((prevTurns) => {
 
-      if (prevTurns.length > 0 && prevTurns[0].player === "X") {
-        currentPlayer = "0";
-      }
+      const currentPlayer = deriveActivePlayer(prevTurns);
+      
+
 
       const updatedTurns = [{ square: { row: rowIndex, col: colIndex }, player : activePlayer}, ...prevTurns];
-    });
-    return updatedTurns;
+      return updatedTurns;
+   });
   }
 
     
@@ -31,9 +74,10 @@ function App() {
         <Player initialName="Player 1" symbol="X" isActive={activePlayer === "X"}/>
         <Player initialName="Player 2" symbol="O" isActive={activePlayer === "O"}/>
       </ol>
-        <GameBoard onSelectSquare={handlePlayerClick} activePlayerSymbol={activePlayer}/>
+        {winner && <p>you won, {winner}!</p>}
+        <GameBoard onSelectSquare={handlePlayerClick} activePlayerSymbol={activePlayer} turns={gameTurns}/>
     </div>
-    <Log/>
+    <Log turns={gameTurns}/>
   </main>;
 }
 
