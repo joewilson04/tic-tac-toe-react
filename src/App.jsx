@@ -10,10 +10,29 @@ const initialGameBoard = [
   [null, null, null]
 ]
 
+  let winner;
 
 
 function deriveActivePlayer(gameTurns) {
   let currentPlayer = "X";
+
+
+
+
+
+  if (gameTurns.length > 0 && gameTurns[0].player === "X") {
+    currentPlayer = "O";  
+  }
+
+  return currentPlayer;
+}
+
+function App() {
+  const [gameTurns, setGameTurns] = useState([]);
+  //const [activePlayer, setActivePlayer] = useState("X");
+
+  const activePlayer = deriveActivePlayer(gameTurns);
+
   let gameBoard = initialGameBoard;
 
   for (const turn of gameTurns) {
@@ -22,8 +41,6 @@ function deriveActivePlayer(gameTurns) {
 
     gameBoard [row][col] = player;
   }
-
-  let winner;
 
   for(const combination of WINNING_COMBINATIONS) {
     const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
@@ -38,21 +55,6 @@ function deriveActivePlayer(gameTurns) {
   }
 
 
-  if (gameTurns.length > 0 && gameTurns[0].player === "X") {
-    currentPlayer = "O";  
-  }
-
-  return currentPlayer;
-}
-
-function App() {
-  const [gameTurns, setGameTurns] = useState([]);
-  const [hasWinner, setHasWinner] = useState(false);
-  //const [activePlayer, setActivePlayer] = useState("X");
-
-  const activePlayer = deriveActivePlayer(gameTurns);
-
-
   function handlePlayerClick(rowIndex, colIndex) {
     //setActivePlayer((curActivePlayer) => curActivePlayer === "X" ? "O" : "X");
     setGameTurns((prevTurns) => {
@@ -61,7 +63,8 @@ function App() {
       
 
 
-      const updatedTurns = [{ square: { row: rowIndex, col: colIndex }, player : activePlayer}, ...prevTurns];
+      const updatedTurns = [{ square: { row: rowIndex, col: colIndex }, 
+      player : activePlayer}, ...prevTurns];
       return updatedTurns;
    });
   }
@@ -75,7 +78,7 @@ function App() {
         <Player initialName="Player 2" symbol="O" isActive={activePlayer === "O"}/>
       </ol>
         {winner && <p>you won, {winner}!</p>}
-        <GameBoard onSelectSquare={handlePlayerClick} activePlayerSymbol={activePlayer} turns={gameTurns}/>
+        <GameBoard onSelectSquare={handlePlayerClick} board={gameBoard}/>
     </div>
     <Log turns={gameTurns}/>
   </main>;
